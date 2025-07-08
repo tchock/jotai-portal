@@ -1,0 +1,56 @@
+{
+  "name": "jotai-portal",
+  "version": "0.0.0",
+  "description": "Create reusable derived atoms in Jotai",
+  "type": "module",
+  "main": "./dist/jotai-portal.cjs",
+  "exports": {
+    ".": {
+      "import": "./dist/jotai-portal.js",
+      "require": "./dist/jotai-portal.cjs"
+    }
+  },
+  "module": "./dist/jotai-portal.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "eslint ./src --ext .ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tchock/jotai-portal.git"
+  },
+  "keywords": [
+    "jotai",
+    "related",
+    "derived",
+    "state",
+    "react"
+  ],
+  "author": "simon@bojagi.io",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tchock/jotai-portal/issues"
+  },
+  "homepage": "https://github.com/tchock/jotai-portal#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@types/node": "^24.0.10",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
+    "prettier": "3.5.3",
+    "prettier-eslint": "^16.4.2",
+    "rxjs": "^7.8.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "jotai": "^2.12.5"
+  }
+}
