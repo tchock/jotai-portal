@@ -9,7 +9,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        'jotai-portal': resolve(__dirname, 'src/index.ts'),
+        index: resolve(__dirname, 'src/index.ts'),
       },
       name: 'jotai-portal',
     },
@@ -26,7 +26,7 @@ export default defineConfig({
   },
   plugins: [
     dts({
-      exclude: ['src/**/*.test.ts', 'node_modules/**'],
+      rollupTypes: true,
     }),
   ],
 })
