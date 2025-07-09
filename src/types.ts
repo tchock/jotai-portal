@@ -19,9 +19,9 @@ type ConditionalReturnAtom<
   : ReturnType extends 'read-only'
     ? Atom<T>
     : ReturnType extends 'write-only'
-      ? WritableAtom<null, [T], void>
+      ? WritableAtom<unknown, [T], void>
       : ReturnType extends 'write-only-empty'
-        ? WritableAtom<null, [], void>
+        ? WritableAtom<unknown, [], void>
         : never
 
 type AtomCreatorOrReturnAtom<ReturnAtom, Args extends Array<unknown>> =
