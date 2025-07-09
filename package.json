@@ -5,11 +5,11 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./jotai-portal.js",
-      "require": "./jotai-portal.cjs"
+      "import": "./index.js",
+      "require": "./index.cjs"
     }
   },
-  "module": "./jotai-portal.js",
+  "module": "./index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
