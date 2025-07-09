@@ -29,6 +29,9 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
         run: npm run prepare-release
-      - run: npm publish --provenance --access public
+      - run: npm publish --provenance --access public ./dist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+permissions:
+  contents: write
+  id-token: write
