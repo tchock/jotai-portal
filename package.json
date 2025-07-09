@@ -3,14 +3,14 @@
   "version": "0.0.0",
   "description": "Create reusable derived atoms in Jotai",
   "type": "module",
-  "main": "./dist/jotai-portal.cjs",
+  "main": "./jotai-portal.cjs",
   "exports": {
     ".": {
-      "import": "./dist/jotai-portal.js",
-      "require": "./dist/jotai-portal.cjs"
+      "import": "./jotai-portal.js",
+      "require": "./jotai-portal.cjs"
     }
   },
-  "module": "./dist/jotai-portal.js",
+  "module": "./jotai-portal.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
