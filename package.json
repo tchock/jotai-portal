@@ -4,6 +4,7 @@
   "description": "Create reusable derived atoms in Jotai",
   "type": "module",
   "main": "./jotai-portal.cjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
       "import": "./jotai-portal.js",
