@@ -14,6 +14,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "prepare-release": "node scripts/prepare-release.js",
     "preview": "vite preview",
     "test": "vitest",
     "lint": "eslint ./src --ext .ts"

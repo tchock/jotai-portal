@@ -1,0 +1,35 @@
+
+name: Publish NPM packages
+on:
+    push:
+      tags:
+        - 'v[0-9]+\.[0-9]+\.[0-9]+'
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies
+        run: npm install
+
+      - name: Test
+        run: npm run test
+      
+      - name: Set version
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: npm run set-version
+
+      - name: Build
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: npm run build
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
