@@ -20,16 +20,15 @@ jobs:
 
       - name: Test
         run: npm run test
-      
-      - name: Set version
-        env:
-          VERSION: ${{ github.ref_name }}
-        run: npm run set-version
 
       - name: Build
         env:
           VERSION: ${{ github.ref_name }}
         run: npm run build
+      - name: Prepare release
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: npm run prepare-release
       - run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
