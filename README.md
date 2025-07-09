@@ -145,29 +145,28 @@ const show: Show = itemAtom(showsAtom, '20352');
 const service: StreamingService = itemAtom(streamingServicesAtom, '2');
 ```
 
-To make this a bit easier, `jotai-portal` exposes a small utility types that you can use instead of `WritableAtom`:
+To make this a bit easier, `jotai-portal` exposes a small utility type to wrap your atom type. It prefixes the types internally, so there will be no conflicts with your props.
 
 ```ts
-import type { WritablePortalAtom, PrimitivePortalAtom, PortalAtom };
+import type { BrandedAtom } from 'jotai-portal';
 
-type ArrayAtom<T> = WritablePortalAtom<T[], [T[]], void, {
+type ArrayAtom<T> = BrandedAtom<WritableAtom<T[], [T[]], void>, {
   itemType: T;
 }>
 
-type ReadOnlyArrayAtom<T> = PortalAtom<T[], {
+type ReadOnlyArrayAtom<T> = BrandedAtom<Atom<T[]>, {
   itemType: T;
 }>
 
-type PrimitiveArrayAtom<T> = PrimitivePortalAtom<T, {
+type PrimitiveArrayAtom<T> = BrandedAtom<PrimitiveAtom<T, {
   itemType: T;
-}>
+}>>
 ```
 
-They take the original arguments from respectively `WritableAtom`, `PrimitiveAtom` or `Atom` and
-add one argument more: The type resolver map. You can define as many resolver properties as you need:
+The `BrandedAtom` takes the atom type and a resolver map. You can define as many resolver properties as you need:
 
 ```ts
-type ReadOnlyArrayAtom<T> = PortalAtom<T[], {
+type ReadOnlyArrayAtom<T> = BrandedAtom<T[], {
   itemType: T;
   removeArgType: T | string;
 }>
