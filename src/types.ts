@@ -1,7 +1,12 @@
-import type { Atom, WritableAtom } from 'jotai/vanilla'
+import type { Atom, PrimitiveAtom, WritableAtom } from 'jotai/vanilla'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyAtom = WritableAtom<any, any[], unknown>
+type AnyAtom =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | WritableAtom<any, any[], unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | PrimitiveAtom<any>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | Atom<any>
 
 type NullableAtom<Read, Write, ReturnValue = void> = WritableAtom<
   Read | null | undefined,
