@@ -1,4 +1,4 @@
-import { atom } from 'jotai/vanilla'
+import { atom, ExtractAtomValue } from 'jotai/vanilla'
 import { atomFamily } from 'jotai/vanilla/utils'
 
 import type {
@@ -51,7 +51,10 @@ const portalAtom = <
     ...args: Args
   ) => {
     type OutputAtom = LinkedAtom[PrefixedBrandKey] extends AnyAtom
-      ? ConditionalReturnAtom<LinkedAtom[PrefixedBrandKey], ReturnAtomType>
+      ? ConditionalReturnAtom<
+          ExtractAtomValue<LinkedAtom[PrefixedBrandKey]>,
+          ReturnAtomType
+        >
       : AnyAtom
     return family([linkedAtom, ...args]) as OutputAtom
   }
