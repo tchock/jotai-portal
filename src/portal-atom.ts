@@ -63,7 +63,10 @@ const portalAtom = <
     linkedAtom: LinkedAtom,
     creator:
       | AtomCreatorOrReturnAtom<
-          ConditionalReturnAtom<LinkedAtom[PrefixedBrandKey], ReturnAtomType>,
+          ConditionalReturnAtom<
+            ExtractAtomValue<LinkedAtom[PrefixedBrandKey]>,
+            ReturnAtomType
+          >,
           Args
         >
       | null
