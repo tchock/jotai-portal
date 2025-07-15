@@ -104,93 +104,99 @@ getItemAtom(mapAtom, '123');
 ### Getting proper types for the values of portal atoms
 
 Inferring types out of the portal construct is not that easy, because they cannot really be statically
-linked to each other (TypeScript might even not extract the needed type for the derived atom from it at all).
+linked to each other. That's why `portalAtom` uses branded types for the linked atoms.
 
-That's why `portalAtom` uses branded types for the linked atoms. Branded types are properties of an object
-that don't really exist in JS itself and usually is used to differentiate two type that are structurally the same.
-We can use this to make `portalAtom` to extract the output type.
+Branded types are properties of an object that don't really exist in JS itself, but are helpful in
+the TypeScript world. They are usually used to differentiate two types that are structurally the same
+(like a user ID and article ID, that both use the type string, but are describing different things).
 
-```ts
-interface Show {
-  id: string;
-  name: string;
-  episodes: number;
-  rating: number;
-  trailerUrl: string;
-}
-
-interface StreamingService {
-  id: string;
-  name: string;
-  availableShows: number;
-}
-
-// portalAtoms use __ prefix for the branded type key
-type ArrayAtom<T> = WritableAtom<T[], [T[]], void> & {
-  __itemType?: T;
-}
-
-// First generic argument is the brand type key, where the portal atom extracts it's return value type
-const [itemAtom, itemCreator] = portalAtom<'itemType', [id: string]>();
-
-// Create atoms with the resolver brand types
-const showsAtom = atom([]) as ArrayAtom<Show>;
-itemCreator(showsAtom, id => { /* get a single show atom by id */ });
-
-const streamingServicesAtom = atom([]) as ArrayAtom<StreamingServices>;
-itemCreator(streamingServicesAtom, id => { /* get a single streaming service atom by id */ });
-
-// Through the '__itemType' brand type the portalAtom can get the return type from different atoms
-const show: Show = itemAtom(showsAtom, '20352');
-const service: StreamingService = itemAtom(streamingServicesAtom, '2');
-```
-
-To make this a bit easier, `jotai-portal` exposes a small utility type to wrap your atom type. It prefixes the types internally, so there will be no conflicts with your props.
+We can also use this technique to make `portalAtom` extract the output type. `jotai-portal` exports
+the `BrandedAtom` type, that gives that linking ability. It prefixes the branded keys internally,
+so there will be no conflicts with your props (plus those type props are marked as optional).
 
 ```ts
 import type { BrandedAtom } from 'jotai-portal';
 
-type ArrayAtom<T> = BrandedAtom<WritableAtom<T[], [T[]], void>, {
-  itemType: T;
+// Let's say you want to output a read-only atom ...
+type InternalArrayAtom<T> = Atom<T[]>;
+// ... and want to attach a "get item by ID" atom that can also write the item itself to the array.
+type ItemAtom<T> = WritableAtom<T, [T], void>;
+
+// You can define one or more linked atom types with the BrandedAtom type.
+// The first generic is the type for the main output atom, second one the resolver for
+// linked atoms you want to expose by the portalAtom function.
+type ArrayAtom<T> = BrandedAtom<InternalArrayAtom<T>, {
+  // The key "itemAtom" can be referred to by the portalAtom function, it then be resolved when this atom type is passed to the getter
+  itemAtom: ItemAtom<T>; 
 }>
 
-type ReadOnlyArrayAtom<T> = BrandedAtom<Atom<T[]>, {
-  itemType: T;
-}>
+interface User {
+  id: string;
+  name: string;
+}
 
-type PrimitiveArrayAtom<T> = BrandedAtom<PrimitiveAtom<T, {
-  itemType: T;
-}>>
+interface Author {
+  id: string;
+  fullName: string;
+  pseudonym: string;
+}
+
+// In the portalAtom function you use the branded keys you defined above (in this case "itemAtom").
+// Second generic is an array of additional arguments, more on that later.
+// The getter uses the matching type value of the passed atom with the BrandedAtom type (in this case "ItemAtom<T>")
+const [itemAtom, itemAtomCreator] = portalAtom<'itemAtom', [id: string]>();
+
+const createListAtom = <T>(): ArrayAtom<T> => {
+  const writableListAtom = atom([]);
+  // This atom is using the branded type, so 
+  const myListAtom: ArrayAtom<Item> = atom(get => get(writableListAtom)) as ArrayAtom<T>;
+  // The created atom is type checked as well in the creator
+  itemAtomCreator(myListAtom, id => atom(/* get function */, /* write function */))
+  return myListAtom;
+}
+
+const userListAtom = createListAtom<User>();
+// userAtom has the type from resolver object (itemAtom) of the ArrayAtom type -> ItemAtom<User>
+const userAtom = getItemAtom(userListAtom, '1234');
+
+const authorListAtom = createListAtom<Author>();
+// authorAtom also uses the same resolver type, but with different generic passed -> ItemAtom<Author>
+const authorAtom = getItemAtom(authorListAtom, '4321');
 ```
 
-The `BrandedAtom` takes the atom type and a resolver map. You can define as many resolver properties as you need:
+As you can see in the example above, the `BrandedAtom` takes the type of the output atom and a resolver
+map as generics. When using `portalAtom` you define the key of that resolver map as the first generic.
+The getter function then uses the type value of that key from the `BrandedAtom` that has been passed to it.
+
+So the type of the atom you pass to the getter function holds the type for the output in it.
+
+You can define as many resolver properties as you need:
 
 ```ts
-type ReadOnlyArrayAtom<T> = BrandedAtom<T[], {
-  itemType: T;
-  removeArgType: T | string;
+type ListAtom<T> = Atom<T[]>;
+// You can use writable atoms
+type ItemAtom<T> = WritableAtom<T, [T], void>;
+// Or write only atoms
+type AddItemAtom<T> = WritableAtom<null, [T], void>;
+type RemoveItemAtom<T> = WritableAtom<null, [T | string], void>;
+// Or atoms without arguments
+type ClearAtom = WritableAtom<null, [], void>;
+
+type ReadOnlyArrayAtom<T> = BrandedAtom<ListAtom<T>, {
+  itemAtom: ItemAtom<T>;
+  addItemAtom: AddItemAtom<T>;
+  removeItemAtom: RemoveItemAtom<T>;
+  clearAtom: ClearAtom;
 }>
 ```
 
 ### Arguments
 
-Portal atoms can optionally use different arguments for atom creations. In TypeScript you can use the second
-generic argument to define those as an array:
+As already described in the example above atoms can optionally use different arguments for atom
+creations. In TypeScript you can use the second generic argument to define those as an array:
 
 ```ts
 const [filterProductAtom] = portalAtom<'itemType', [brand: string, minPrice?: number]>();
-const filteredCarsAtom = filterProductAtom(carsAtom, 'VW'); // minPrice argument is optional
-const filteredLuxuryCarsAtom = filterProductAtom(luxuryCarsAtom, 'BWM', 80000);
-```
-
-### Different types of portal atoms
-
-Jotai differentiates between writable, read-only, write-only and primitive atoms, so the portal atoms
-could be also any of those types. To define the type of the returned atom, you can use the third generic argument:
-
-```ts
-const [getProductAtom] = portalAtom<'itemType', [id: string], 'primitive'>();
-const [getReadOnlyProductAtom] = portalAtom<'itemType', [id: string], 'read-only'>();
-const [addProductAtom] = portalAtom<'itemType', [], 'write-only'>(); // returned atom uses itemType as setter arg
-const [clearProductsAtom] = portalAtom<'itemType', [], 'write-only-empty'>(); // returned atom has no setter arg
+const vwCarsAtom = filterProductAtom(carsAtom, 'VW'); // minPrice argument is optional
+const bmwLuxuryCarsAtom = filterProductAtom(carsAtom, 'BWM', 80000);
 ```

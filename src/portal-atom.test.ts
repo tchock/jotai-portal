@@ -1,5 +1,10 @@
 import { expect, test, describe, beforeEach } from 'vitest'
-import { atom, createStore } from 'jotai/vanilla'
+import {
+  atom,
+  createStore,
+  type WritableAtom,
+  type PrimitiveAtom,
+} from 'jotai/vanilla'
 import { portalAtom } from './portal-atom'
 import type { AnyAtom, BrandedAtom } from './types'
 
@@ -84,12 +89,14 @@ describe('basic functionality', () => {
     const [get] = portalAtom<'testBrand'>()
     const store = createStore()
 
-    const linkedAtom = atom('test') as unknown as BrandedTestAtom
+    const linkedAtom = atom('test') as unknown as BrandedTestAtom<
+      WritableAtom<null, [string], void>
+    >
 
     const result1 = get(linkedAtom)
 
     expect(store.get(result1)).toBe(null)
-    store.set(result1, 'some value' as never)
+    store.set(result1, 'some value')
 
     // The set action should be a noop, so the value should still be null
     expect(store.get(result1)).toBe(null)
@@ -130,11 +137,15 @@ describe('caching outputs', () => {
   test('cache atoms based on the linked atom (no arguments)', () => {
     const [get, set] = portalAtom<'testBrand'>()
 
-    const linkedAtom = atom('test') as unknown as BrandedTestAtom
-    const otherlinkedAtom = atom('test') as unknown as BrandedTestAtom
+    const linkedAtom = atom('test') as unknown as BrandedTestAtom<
+      PrimitiveAtom<string>
+    >
+    const otherlinkedAtom = atom('test') as unknown as BrandedTestAtom<
+      PrimitiveAtom<string>
+    >
 
-    set(linkedAtom, () => atom(`value`) as never)
-    set(otherlinkedAtom, () => atom(`value`) as never)
+    set(linkedAtom, () => atom(`value`))
+    set(otherlinkedAtom, () => atom(`value`))
 
     const result1 = get(linkedAtom)
     const result2 = get(linkedAtom)
@@ -178,7 +189,7 @@ describe('caching outputs', () => {
 
     set(linkedAtom, (str: string, num: number, otherString: string) => {
       callCount += 1
-      return atom(`value-${str}-${num}-${otherString}`) as never
+      return atom(`value-${str}-${num}-${otherString}`)
     })
 
     // First call should always create a new atom
@@ -226,7 +237,7 @@ describe('caching outputs', () => {
 
     const creator = (str: string, num: number, otherString: string) => {
       callCount += 1
-      return atom(`value-${str}-${num}-${otherString}`) as never
+      return atom(`value-${str}-${num}-${otherString}`)
     }
 
     // Use the same creator function for both linked atoms
@@ -276,7 +287,7 @@ describe('caching outputs', () => {
     expect(unregisteredResult1).toBe(unregisteredResult2)
 
     // Set a creator function for the first time
-    set(linkedAtom, () => atom('new-related') as never)
+    set(linkedAtom, () => atom('new-related'))
 
     // The cache should be cleared and the new atom should be created
     const registeredResult = get(linkedAtom)
@@ -294,7 +305,7 @@ describe('caching outputs', () => {
     const linkedAtom = atom('test') as unknown as BrandedTestAtom
 
     // Set a creator function for the first time
-    set(linkedAtom, (a, b, c) => atom(`result1-${a}-${b}-${c}`) as never)
+    set(linkedAtom, (a, b, c) => atom(`result1-${a}-${b}-${c}`))
     const testCasesInitial = [
       [[], 'result1-undefined-undefined-undefined'],
       [['arg1'], 'result1-arg1-undefined-undefined'],
@@ -311,7 +322,7 @@ describe('caching outputs', () => {
     })
 
     // Override the creator function with a new one, cache should be cleared
-    set(linkedAtom, (a, b, c) => atom(`result2-${a}-${b}-${c}`) as never)
+    set(linkedAtom, (a, b, c) => atom(`result2-${a}-${b}-${c}`))
     const testCasesOverride = [
       [[], 'result2-undefined-undefined-undefined'],
       [['arg1'], 'result2-arg1-undefined-undefined'],
@@ -356,8 +367,8 @@ describe('type safety and branding', () => {
       }
     >
 
-    set1(linkedAtom1, atom('related1') as never)
-    set2(linkedAtom2, atom('related2') as never)
+    set1(linkedAtom1, atom('related1'))
+    set2(linkedAtom2, atom('related2'))
 
     const result1 = get1(linkedAtom1)
     const result2 = get2(linkedAtom2)
@@ -382,10 +393,8 @@ describe('type safety and branding', () => {
       }
     >
 
-    set(
-      linkedAtom,
-      (obj: { id: string; value: number }, arr: string[]) =>
-        atom(`${obj.id}-${obj.value}-${arr.join(',')}`) as never
+    set(linkedAtom, (obj: { id: string; value: number }, arr: string[]) =>
+      atom(`${obj.id}-${obj.value}-${arr.join(',')}`)
     )
 
     const result = get(linkedAtom, { id: 'test', value: 42 }, ['a', 'b', 'c'])
@@ -397,16 +406,13 @@ describe('edge cases', () => {
   test('handle object arguments with reference equality', () => {
     const [get, set] = portalAtom<'testBrand', [{ value: number }]>()
     const linkedAtom = atom('test') as unknown as BrandedAtom<
-      AnyAtom,
+      PrimitiveAtom<string>,
       {
-        testBrand: AnyAtom
+        testBrand: PrimitiveAtom<number>
       }
     >
 
-    set(
-      linkedAtom,
-      (obj: { value: number }) => atom(`value-${obj.value}`) as never
-    )
+    set(linkedAtom, (obj) => atom(obj.value))
 
     const obj1 = { value: 42 }
     const obj2 = { value: 42 }
