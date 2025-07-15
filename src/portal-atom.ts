@@ -1,18 +1,11 @@
-import { atom, ExtractAtomValue } from 'jotai/vanilla'
+import { atom } from 'jotai/vanilla'
 import { atomFamily } from 'jotai/vanilla/utils'
 
-import type {
-  AnyAtom,
-  AtomCreatorOrReturnAtom,
-  AtomType,
-  ConditionalReturnAtom,
-  PrefixedBrand,
-} from './types'
+import type { AnyAtom, AtomCreatorOrReturnAtom, PrefixedBrand } from './types'
 
 const portalAtom = <
   BrandKey extends string,
   Args extends Array<unknown> = [],
-  ReturnAtomType extends AtomType = 'primitive',
 >() => {
   type PrefixedBrandKey = PrefixedBrand<BrandKey>
   type BrandedLinkedAtom = AnyAtom & { [key in PrefixedBrandKey]: unknown }
@@ -51,10 +44,7 @@ const portalAtom = <
     ...args: Args
   ) => {
     type OutputAtom = LinkedAtom[PrefixedBrandKey] extends AnyAtom
-      ? ConditionalReturnAtom<
-          ExtractAtomValue<LinkedAtom[PrefixedBrandKey]>,
-          ReturnAtomType
-        >
+      ? LinkedAtom[PrefixedBrandKey]
       : AnyAtom
     return family([linkedAtom, ...args]) as OutputAtom
   }
@@ -62,13 +52,7 @@ const portalAtom = <
   const set = <LinkedAtom extends BrandedLinkedAtom>(
     linkedAtom: LinkedAtom,
     creator:
-      | AtomCreatorOrReturnAtom<
-          ConditionalReturnAtom<
-            ExtractAtomValue<LinkedAtom[PrefixedBrandKey]>,
-            ReturnAtomType
-          >,
-          Args
-        >
+      | AtomCreatorOrReturnAtom<LinkedAtom[PrefixedBrandKey], Args>
       | null
       | undefined
   ) => {
