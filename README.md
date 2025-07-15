@@ -107,7 +107,7 @@ Inferring types out of the portal construct is not that easy, because they canno
 linked to each other. That's why `portalAtom` uses branded types for the linked atoms.
 
 Branded types are properties of an object that don't really exist in JS itself, but are helpful in
-the TypeScript world. They are usually used to differentiate two type that are structurally the same
+the TypeScript world. They are usually used to differentiate two types that are structurally the same
 (like a user ID and article ID, that both use the type string, but are describing different things).
 
 We can also use this technique to make `portalAtom` extract the output type. `jotai-portal` exports

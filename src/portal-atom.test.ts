@@ -1,8 +1,12 @@
 import { expect, test, describe, beforeEach } from 'vitest'
-import { atom, createStore, WritableAtom } from 'jotai/vanilla'
+import {
+  atom,
+  createStore,
+  type WritableAtom,
+  type PrimitiveAtom,
+} from 'jotai/vanilla'
 import { portalAtom } from './portal-atom'
 import type { AnyAtom, BrandedAtom } from './types'
-import { PrimitiveAtom } from 'jotai'
 
 type BrandedTestAtom<T = AnyAtom> = BrandedAtom<AnyAtom, { testBrand: T }>
 
